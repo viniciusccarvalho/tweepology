@@ -3,13 +3,14 @@ package com.fb.tweepology.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 
 @NodeEntity
 public class TwitterProfile implements Serializable {
 
 	public TwitterProfile(){}
-	
+	@Indexed
 	private Long id;
 	private int followersCount;
 	private int favoritesCount;
