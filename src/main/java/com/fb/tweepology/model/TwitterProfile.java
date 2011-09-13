@@ -1,13 +1,20 @@
 package com.fb.tweepology.model;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.data.neo4j.annotation.Indexed;
 import org.springframework.data.neo4j.annotation.NodeEntity;
+import org.springframework.data.neo4j.annotation.RelatedTo;
+import org.springframework.data.neo4j.core.Direction;
 
 @NodeEntity
 public class TwitterProfile implements Serializable {
+
+	
 
 	public TwitterProfile(){}
 	@Indexed
@@ -20,6 +27,15 @@ public class TwitterProfile implements Serializable {
 	private String name;
 	private String screenName;
 	
+	@RelatedTo(elementClass=TwitterProfile.class,type="FOLLOWS",direction=Direction.INCOMING)
+	private Set<TwitterProfile> follows;
+	
+	@RelatedTo(elementClass=TwitterProfile.class,type="FOLLOWS",direction=Direction.OUTGOING)
+	private Set<TwitterProfile> followers;
+	
+	
+	
+	
 	public TwitterProfile(org.springframework.social.twitter.api.TwitterProfile adaptee){
 		this.id = adaptee.getId();
 		this.followersCount = adaptee.getFollowersCount();
@@ -29,7 +45,25 @@ public class TwitterProfile implements Serializable {
 		this.statusesCount = adaptee.getStatusesCount();
 		this.name = adaptee.getName();
 		this.screenName = adaptee.getScreenName();
+		this.followers = new HashSet<TwitterProfile>();
+		this.follows = new HashSet<TwitterProfile>();
 	}
+	
+	public void addFollower(TwitterProfile p){
+		this.followers.add(p);
+	}
+	
+	public void addFriend(TwitterProfile p){
+		this.follows.add(p);
+	}
+	public Set<TwitterProfile> getFollows() {
+		return Collections.unmodifiableSet(this.follows);
+	}
+
+	public Set<TwitterProfile> getFollowers() {
+		return Collections.unmodifiableSet(this.followers);
+	}
+	
 
 	public Long getId() {
 		return id;

@@ -14,11 +14,16 @@ import org.springframework.social.twitter.api.Tweet;
 import org.springframework.social.twitter.api.Twitter;
 import org.springframework.stereotype.Service;
 
+import com.fb.tweepology.model.TwitterProfile;
+import com.fb.tweepology.model.repositories.ProfileRepository;
+
 @Service
 public class ProfileService {
 
 	@Inject
 	private Twitter twitter;
+	
+	@Inject ProfileRepository profileRepository;
 
 	public List<Tweet> getUserTimeline(Date from, Date to) {
 		List<Tweet> timeline = new ArrayList<Tweet>();
@@ -40,6 +45,18 @@ public class ProfileService {
 		return timeline;
 	}
 
+	
+	public TwitterProfile getProfile(long id){
+		TwitterProfile profile = null;
+		profile = profileRepository.findByPropertyValue("id", id);
+		if(profile == null){
+			org.springframework.social.twitter.api.TwitterProfile tp = twitter.userOperations().getUserProfile(id);
+			profile = new TwitterProfile(tp);
+			profile.persist();
+		}
+		return profile;
+	}
+	
 	
 	public List<Tweet> getUserTimeline(){
 		boolean hasNext = true;

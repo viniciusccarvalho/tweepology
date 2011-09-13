@@ -22,7 +22,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.encrypt.Encryptors;
@@ -48,25 +47,23 @@ import com.fb.tweepology.security.SimpleSignInAdapter;
 @Configuration
 public class SocialConfig {
 
+	
 	@Inject
-	private Environment environment;
-
-	@Inject
-	private DataSource dataSource;
+	private DataSource datasource;
 
 	@Bean
 	@Scope(value="singleton", proxyMode=ScopedProxyMode.INTERFACES) 
 	public ConnectionFactoryLocator connectionFactoryLocator() {
 		ConnectionFactoryRegistry registry = new ConnectionFactoryRegistry();
-		registry.addConnectionFactory(new TwitterConnectionFactory(environment.getProperty("twitter.consumerKey"),
-				environment.getProperty("twitter.consumerSecret")));
+		registry.addConnectionFactory(new TwitterConnectionFactory("YR571S2JiVBOFyJS5MEg",
+				"Kb8hS0luftwCJX3qVoyiLUMfZDtK1EozFoUkjNLUMx4"));
 		return registry;
 	}
 
 	@Bean
 	@Scope(value="request", proxyMode=ScopedProxyMode.INTERFACES) 
 	public UsersConnectionRepository usersConnectionRepository() {
-		return new JdbcUsersConnectionRepository(dataSource, connectionFactoryLocator(), Encryptors.noOpText());
+		return new JdbcUsersConnectionRepository(datasource, connectionFactoryLocator(), Encryptors.noOpText());
 	}
 
 	@Bean

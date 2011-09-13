@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import org.springframework.social.twitter.api.Tweet;
 import org.springframework.social.twitter.api.Twitter;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -34,16 +35,30 @@ public class ProfileController {
 	
 	private DateFormat groupFormat = new SimpleDateFormat("yyyyMMdd");
 	
-	@RequestMapping(value="{id}",produces={"application/json"},method=RequestMethod.GET)
+	@RequestMapping(value="{id}",method=RequestMethod.GET)
 	@ResponseBody
-	public TwitterProfile getProfile(@PathVariable("id") Long id){
+	@Transactional
+	public org.springframework.social.twitter.api.TwitterProfile getProfile(@PathVariable("id") Long id){
 		org.springframework.social.twitter.api.TwitterProfile p = twitter.userOperations().getUserProfile();
 		TwitterProfile profile = new TwitterProfile(p);
-		
-		return profile;
+		profile.persist();
+		List<org.springframework.social.twitter.api.TwitterProfile> followers = twitter.friendOperations().getFollowers(); 
+		List<org.springframework.social.twitter.api.TwitterProfile> friends = twitter.friendOperations().getFriends();
+		for(org.springframework.social.twitter.api.TwitterProfile f : followers){
+			TwitterProfile pf = new TwitterProfile(f);
+			pf.persist();
+			profile.addFollower(pf);
+			
+		}
+		for(org.springframework.social.twitter.api.TwitterProfile f : friends){
+			TwitterProfile pf = new TwitterProfile(f);
+			pf.persist();
+			profile.addFriend(pf);
+		}
+		return p;
 	}
 	
-	@RequestMapping(value="timeline",produces={"application/json"},method=RequestMethod.GET)
+	@RequestMapping(value="timeline",method=RequestMethod.GET)
 	@ResponseBody
 	public List<Tweet> timeline(){
 		Calendar lastMonth = Calendar.getInstance();
@@ -53,7 +68,7 @@ public class ProfileController {
 		return timeline;
 	}
 	
-	@RequestMapping(value="timeline/groups",produces={"application/json"},method=RequestMethod.GET)
+	@RequestMapping(value="timeline/groups",method=RequestMethod.GET)
 	@ResponseBody
 	public Map<String, Integer> timelineGroup(){
 		List<Tweet> timeline = timeline();
@@ -69,7 +84,7 @@ public class ProfileController {
 		return map;
 	}
 	
-	@RequestMapping(value="timeline/fans",produces={"text/plain"},method=RequestMethod.GET)
+	@RequestMapping(value="timeline/fans",method=RequestMethod.GET)
 	@ResponseBody
 	public String fans(){
 		profileService.x();
